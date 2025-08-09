@@ -1,30 +1,39 @@
-szuper — itt a kész, bővített `README.md` (másold be a repó gyökerébe a meglévő helyére):
+Rendben, akkor itt a teljesen kezdőbarát, lépésről lépésre érthető `README.md`, amit simán be tudsz másolni a GitHub-odon lévő mostani README helyére.
 
 ---
 
-# TMDB Full Scraper — monorepo
+# TMDB Full Scraper – Egyszerű telepítési útmutató
 
-**Laravel API + Python ETL + Next.js Web** egy monorepóban. Cél: a **TMDB** teljes (film, sorozat, személy, cég, hálózat stb.) adatainak **saját adatbázisba** tükrözése, majd ezek kiszolgálása többnyelvű (HU/EN/DE) webes felületen.
+Ez a projekt egy **TMDB** adatletöltő és megjelenítő rendszer.
+Olyan, mint egy saját mini **TMDB / IMDB / Mafab.hu**, ami a TMDB API-ból lekéri az összes adatot (filmek, sorozatok, személyek, cégek, stb.), elmenti a saját adatbázisodba, és egy weboldalon meg is jeleníti.
 
-Fő elvek: **inkrementális frissítés** (TMDB `/changes`), **idempotens upsert**, **hibatűrés**, **SEO‑barát frontend**.
+A rendszer 3 részből áll:
 
-## Tartalom
+1. **API** – Laravel-ben készült, az adatbázist kezeli.
+2. **ETL** – Python program, ami a TMDB API-ból letölti és betölti az adatokat.
+3. **Web** – Next.js alapú weboldal, ahol a felhasználók látják az adatokat.
 
-* `apps/api` – **Laravel 11** API (migrációk, modellek, ingest végpontok, admin alapok)
-* `apps/etl` – **Python 3.11** ETL (TMDB kliens, normalizálók, pipeline‑ok, `/changes` watcher)
-* `apps/web` – **Next.js 14** (App Router, i18n, kereső + adatlapok)
-* `opensearch` – index sémák (film/személy/sorozat)
-* `docker-compose.yml` – Postgres + Redis + OpenSearch + API + ETL + Web
+---
 
-## Követelmények
+## 1. Előkészületek
 
-* Docker + Docker Compose
-* **TMDB v4 Bearer Token** ([https://www.themoviedb.org/settings/api](https://www.themoviedb.org/settings/api))
-* Javasolt: legalább 8 GB RAM (OpenSearch memóriás)
+Szükséged lesz:
 
-## Gyorsindítás (lokál)
+* **TMDB API kulcs** (v4 token) → [itt tudsz igényelni](https://www.themoviedb.org/settings/api)
+* **Docker** telepítve a gépedre → [letöltés](https://www.docker.com/products/docker-desktop/)
 
-1. **Env fájlok**
+---
+
+## 2. Letöltés és beállítás
+
+Ha még nincs meg a projekt:
+
+```bash
+git clone https://github.com/butykaidavid/tmdb-fullstack.git
+cd tmdb-fullstack
+```
+
+Másold ki az `.env` példafájlokat:
 
 ```bash
 cp .env.example .env
@@ -33,126 +42,113 @@ cp apps/etl/.env.example apps/etl/.env
 cp apps/web/.env.example apps/web/.env
 ```
 
-* Az `apps/etl/.env`‑ben töltsd ki: **TMDB\_BEARER=...**
-* Portok/hostok igény szerint módosíthatók.
+Ezután szerkeszd az **apps/etl/.env** fájlt, és írd be a TMDB kulcsodat:
 
-2. **Konténerek**
+```
+TMDB_BEARER=ide_írd_a_v4_tmdb_tokened
+```
+
+---
+
+## 3. Rendszer indítása
+
+A teljes rendszer indítása:
 
 ```bash
 docker compose up -d --build
 ```
 
-3. **Migrációk (API)**
+Ez letölti és elindítja:
 
-```bash
-docker compose exec api php artisan migrate
-# (opcionális) Filament admin user:
-docker compose exec api php artisan make:filament-user
-```
-
-4. **Szótárak és alapadatok**
-
-```bash
-docker compose exec etl python -m etl.cli bootstrap
-```
-
-5. **Backfill (első betöltés)**
-
-```bash
-docker compose exec etl python -m etl.cli backfill movies
-docker compose exec etl python -m etl.cli backfill people
-docker compose exec etl python -m etl.cli backfill tv
-```
-
-6. **Folyamatos frissítés**
-
-```bash
-docker compose exec etl python -m etl.cli changes watch
-```
-
-7. **Frontend**
-
-* [http://localhost:3000/hu](http://localhost:3000/hu)
-  (Alap: kereső, film/személy adatlapok. TV oldalak is előkészítve.)
-
-## ETL parancsok
-
-```bash
-# Szótár entitások (genres, certifications, providers)
-docker compose exec etl python -m etl.cli bootstrap
-
-# Backfill (ID-tartományra bővíthető a cli-ben)
-docker compose exec etl python -m etl.cli backfill movies
-docker compose exec etl python -m etl.cli backfill people
-docker compose exec etl python -m etl.cli backfill tv
-
-# Inkrementális változásfigyelés (TMDB /changes)
-docker compose exec etl python -m etl.cli changes watch
-```
-
-## Architektúra (röviden)
-
-* **ETL** hívja a TMDB API-t (rate‑limit kímélet), normalizál és **idempotens upsert**-tel tölti a DB-t az **API ingest** végpontjain.
-* **API** kezeli az adatmodellt, ingestet, admin alapokat (Filament).
-* **Web** SSR/ISR oldalak i18n‑nel. Képek/videók **TMDB CDN**-ről (nincs lokális képtárolás).
-
-## Konfiguráció (fő env kulcsok)
-
-* `apps/etl/.env`
-
-  * `TMDB_BEARER` – **kötelező**, v4 token
-  * `TMDB_LANGS=hu-HU,en-US,de-DE`
-  * `TMDB_REGIONS=HU,US,DE`
-  * `API_URL=http://api`, `API_TOKEN=devtoken` (belső ingest híváshoz)
-* `apps/api/.env`
-
-  * Postgres/Redis beállítások, Scout/OpenSearch (ha használod a keresőt)
-* `apps/web/.env`
-
-  * `NEXT_PUBLIC_API_BASE=http://localhost:8080`
-
-## Hasznos tippek
-
-* **OpenSearch**: ha kevés a RAM, ideiglenesen kiveheted a Compose‑ból (kereső nélkül is fut).
-* **Rate limit**: nagy backfillnél hagyd futni; az ETL backoffol és tolerálja a részleges hibákat.
-* **.gitignore**: ne tölts fel `.env`, `node_modules`, `vendor` tartalmakat.
-
-## Hibakeresés
-
-```bash
-# API logok
-docker compose logs -f api
-
-# ETL logok
-docker compose logs -f etl
-
-# Adatbázis hibák: ellenőrizd apps/api/.env és docker-compose.yml (DB_HOST=postgres, DB_USERNAME=app, DB_PASSWORD=app)
-# TMDB 401/403: rossz vagy hiányzó TMDB_BEARER
-```
-
-## Biztonság
-
-* **Tokeneket** (TMDB, GitHub PAT stb.) soha ne tedd publikussá.
-* Ha véletlenül megosztottad, azonnal **Revoke** és generálj újat.
-
-## TMDB attribúció és ToS
-
-Ez a projekt a **TMDB API**-t használja, de **nem TMDB által támogatott vagy hitelesített**.
-Kérlek, tartsd be a TMDB felhasználási feltételeit és jelenítsd meg az attribúciót a frontend láblécében:
-
-> “This product uses the TMDB API but is not endorsed or certified by TMDB.”
-
-## Roadmap (ötletek)
-
-* DLQ (dead‑letter queue) + Grafana metrikák/riasztások
-* Reviews + moderáció
-* User funkciók (auth, kedvencek, watchlist)
-* Diff‑nézet az adminban (`raw` előző vs. aktuális)
-* OpenSearch‑alapú autocomplete és rangsorolás finomhangolás
-
-## Licenc
-
-Adj hozzá egy `LICENSE` fájlt (pl. MIT), ha nyilvánosan terjeszted.
+* az adatbázist (PostgreSQL)
+* a gyorsítótárat (Redis)
+* a keresőt (OpenSearch)
+* az API-t
+* az ETL-t
+* a weboldalt
 
 ---
 
+## 4. Adatbázis előkészítése
+
+Futtasd az adatbázis migrációkat:
+
+```bash
+docker compose exec api php artisan migrate
+```
+
+---
+
+## 5. Alapadatok letöltése (nyelvek, műfajok stb.)
+
+```bash
+docker compose exec etl python -m etl.cli bootstrap
+```
+
+---
+
+## 6. Filmlista letöltése
+
+Példák:
+
+```bash
+# Minden film
+docker compose exec etl python -m etl.cli backfill movies
+
+# Minden személy
+docker compose exec etl python -m etl.cli backfill people
+
+# Minden sorozat
+docker compose exec etl python -m etl.cli backfill tv
+```
+
+**Ez sok idő lehet**, mert rengeteg adat van a TMDB-ben.
+
+---
+
+## 7. Automatikus frissítés indítása
+
+Hogy mindig naprakész legyen az adatbázis:
+
+```bash
+docker compose exec etl python -m etl.cli changes watch
+```
+
+Ez folyamatosan figyeli a TMDB változásokat.
+
+---
+
+## 8. Weboldal megnyitása
+
+Ha minden elindult, nyisd meg a böngészőben:
+
+```
+http://localhost:3000/hu
+```
+
+Itt láthatod a webes felületet magyarul.
+
+---
+
+## 9. Hiba esetén
+
+* **401 / 403 hiba** → Rossz a TMDB kulcsod vagy hiányzik az `.env`-ből.
+* **Adatbázis hiba** → Futtasd újra:
+
+  ```bash
+  docker compose exec api php artisan migrate
+  ```
+* **Nem nyílik meg a weboldal** → Ellenőrizd, hogy fut-e:
+
+  ```bash
+  docker ps
+  ```
+
+---
+
+## 10. Fontos
+
+* Ne töltsd fel a `.env` fájljaidat GitHubra (API kulcs miatt).
+* A projekt **nem hivatalos TMDB termék**, de a TMDB API-t használja.
+
+---
