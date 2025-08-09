@@ -156,4 +156,3 @@ Adj hozzá egy `LICENSE` fájlt (pl. MIT), ha nyilvánosan terjeszted.
 
 ---
 
-ha szeretnéd, készíthetek egy rövid **PR‑szöveget** is ehhez, hogy egy kattintással be tudd küldeni a README‑frissítést.
