@@ -1,150 +1,140 @@
-# TMDB Full Scraper – Egyszerű telepítési útmutató
+---
+
+# TMDB Full Scraper – Teljes Telepítési és Indítási Útmutató
 
 Ez a projekt egy **TMDB** adatletöltő és megjelenítő rendszer.
-Olyan, mint egy saját mini **TMDB / IMDB / Mafab.hu**, ami a TMDB API-ból lekéri az összes adatot (filmek, sorozatok, személyek, cégek, stb.), elmenti a saját adatbázisodba, és egy weboldalon meg is jeleníti.
+Olyan, mint egy saját mini **TMDB / IMDB / Mafab.hu**, ami a TMDB API-ból lekéri az összes adatot (filmek, sorozatok, személyek, cégek stb.), elmenti a saját adatbázisodba, és egy weboldalon meg is jeleníti.
 
-A rendszer 3 részből áll:
+A rendszer 3 fő részből áll:
 
-1. **API** – Laravel-ben készült, az adatbázist kezeli.
-2. **ETL** – Python program, ami a TMDB API-ból letölti és betölti az adatokat.
-3. **Web** – Next.js alapú weboldal, ahol a felhasználók látják az adatokat.
-
----
-
-## 1. Előkészületek
-
-Szükséged lesz:
-
-* **TMDB API kulcs** (v4 token) → [itt tudsz igényelni](https://www.themoviedb.org/settings/api)
-* **Docker** telepítve a gépedre → [letöltés](https://www.docker.com/products/docker-desktop/)
+1. **API** – Laravel 11 (kezeli az adatbázist)
+2. **ETL** – Python 3.11 (letölti és feldolgozza a TMDB adatait)
+3. **Web** – Next.js 14 (felhasználói felület több nyelven: HU/EN/DE)
 
 ---
 
-## 2. Letöltés és beállítás
+## 1. Szükséges előfeltételek
 
-Ha még nincs meg a projekt:
+* **TMDB API kulcs** (v4 token) → [igénylés itt](https://www.themoviedb.org/settings/api)
+* **Docker Desktop** → [letöltés](https://www.docker.com/products/docker-desktop)
+
+---
+
+## 2. Projekt letöltése
 
 ```bash
 git clone https://github.com/butykaidavid/tmdb-fullstack.git
 cd tmdb-fullstack
 ```
 
-Másold ki az `.env` példafájlokat:
+---
+
+## 3. Indítás egyszerűen – script segítségével
+
+### Linux / Mac (Bash)
+
+1. Másold be a repó gyökerébe az alábbi fájlt **`start.sh`** néven:
+
+   * [start.sh tartalom](#linux-mac-indító-script)
+2. Engedélyezd a futtatást:
 
 ```bash
-cp .env.example .env
-cp apps/api/.env.example apps/api/.env
-cp apps/etl/.env.example apps/etl/.env
-cp apps/web/.env.example apps/web/.env
+chmod +x start.sh
 ```
 
-Ezután szerkeszd az **apps/etl/.env** fájlt, és írd be a TMDB kulcsodat:
+3. Futtasd:
 
-```
-TMDB_BEARER=ide_írd_a_v4_tmdb_tokened
+```bash
+./start.sh
 ```
 
 ---
 
-## 3. Rendszer indítása
+### Windows (PowerShell)
 
-A teljes rendszer indítása:
+1. Másold be a repó gyökerébe az alábbi fájlt **`start.ps1`** néven:
 
-```bash
-docker compose up -d --build
+   * [start.ps1 tartalom](#windows-indító-script)
+2. Nyisd meg a PowerShell-t a mappában és engedélyezd a futtatást:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 ```
 
-Ez letölti és elindítja:
+3. Futtasd:
 
-* az adatbázist (PostgreSQL)
-* a gyorsítótárat (Redis)
-* a keresőt (OpenSearch)
-* az API-t
-* az ETL-t
-* a weboldalt
-
----
-
-## 4. Adatbázis előkészítése
-
-Futtasd az adatbázis migrációkat:
-
-```bash
-docker compose exec api php artisan migrate
+```powershell
+.\start.ps1
 ```
 
 ---
 
-## 5. Alapadatok letöltése (nyelvek, műfajok stb.)
+## 4. Mi történik a script futtatásakor?
 
-```bash
-docker compose exec etl python -m etl.cli bootstrap
-```
-
----
-
-## 6. Filmlista letöltése
-
-Példák:
-
-```bash
-# Minden film
-docker compose exec etl python -m etl.cli backfill movies
-
-# Minden személy
-docker compose exec etl python -m etl.cli backfill people
-
-# Minden sorozat
-docker compose exec etl python -m etl.cli backfill tv
-```
-
-**Ez sok idő lehet**, mert rengeteg adat van a TMDB-ben.
+* Ellenőrzi és létrehozza a szükséges `.env` fájlokat
+* Bekéri a TMDB API kulcsodat és beírja a helyére
+* Elindítja a Docker konténereket
+* Lefuttatja az adatbázis migrációkat
+* Letölti az alapadatokat (pl. műfajok, nyelvek)
+* Opcionálisan letölti a filmeket, személyeket, sorozatokat
+* Opcionálisan elindítja a folyamatos frissítést (watcher)
 
 ---
 
-## 7. Automatikus frissítés indítása
+## 5. Weboldal megnyitása
 
-Hogy mindig naprakész legyen az adatbázis:
-
-```bash
-docker compose exec etl python -m etl.cli changes watch
-```
-
-Ez folyamatosan figyeli a TMDB változásokat.
-
----
-
-## 8. Weboldal megnyitása
-
-Ha minden elindult, nyisd meg a böngészőben:
+Ha a script lefutott és a konténerek futnak, nyisd meg a böngészőben:
 
 ```
 http://localhost:3000/hu
 ```
 
-Itt láthatod a webes felületet magyarul.
+---
+
+## 6. Hibakezelés
+
+* **401/403 hiba:** Ellenőrizd, hogy a `apps/etl/.env` fájlban helyes-e a TMDB\_BEARER kulcs.
+* **Konténer nem indul:**
+
+```bash
+docker compose logs
+```
+
+* **Újrakezdés:**
+
+```bash
+docker compose down -v
+./start.sh    # vagy Windows-on .\start.ps1
+```
 
 ---
 
-## 9. Hiba esetén
+## Linux / Mac indító script
 
-* **401 / 403 hiba** → Rossz a TMDB kulcsod vagy hiányzik az `.env`-ből.
-* **Adatbázis hiba** → Futtasd újra:
+<details>
+<summary>Kattints ide a start.sh tartalomért</summary>
 
-  ```bash
-  docker compose exec api php artisan migrate
-  ```
-* **Nem nyílik meg a weboldal** → Ellenőrizd, hogy fut-e:
+```bash
+[ide jön az előbb elkészített teljes start.sh tartalom]
+```
 
-  ```bash
-  docker ps
-  ```
+</details>
 
 ---
 
-## 10. Fontos
+## Windows indító script
 
-* Ne töltsd fel a `.env` fájljaidat GitHubra (API kulcs miatt).
-* A projekt **nem hivatalos TMDB termék**, de a TMDB API-t használja.
+<details>
+<summary>Kattints ide a start.ps1 tartalomért</summary>
+
+```powershell
+[ide jön az előbb elkészített teljes start.ps1 tartalom]
+```
+
+</details>
+
+---
+
+A fenti megoldással egy kezdő is el tudja indítani a rendszert **pár kattintással**, és nem kell kézzel gépelni a parancsokat.
 
 ---
