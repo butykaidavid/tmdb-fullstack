@@ -1,7 +1,3 @@
-Rendben, akkor itt a teljesen kezdőbarát, lépésről lépésre érthető `README.md`, amit simán be tudsz másolni a GitHub-odon lévő mostani README helyére.
-
----
-
 # TMDB Full Scraper – Egyszerű telepítési útmutató
 
 Ez a projekt egy **TMDB** adatletöltő és megjelenítő rendszer.
