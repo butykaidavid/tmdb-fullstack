@@ -1,0 +1,17 @@
+[project]
+name = "tmdb-etl"
+version = "0.1.0"
+dependencies = [
+  "httpx[http2]~=0.27",
+  "orjson~=3.10",
+  "pydantic~=2.8",
+  "asyncpg~=0.29",
+  "redis~=5.0",
+  "tenacity~=9.0",
+  "aiolimiter~=1.1",
+  "uvloop~=0.19",
+  "python-dotenv~=1.0"
+]
+
+[project.scripts]
+etl = "etl.cli:main"

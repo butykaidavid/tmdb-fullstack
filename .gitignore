@@ -1,0 +1,19 @@
+# Laravel / PHP
+/vendor/
+/storage/*.key
+/.env
+apps/api/.env
+
+# Node / Next
+node_modules/
+/.next/
+apps/web/.env
+
+# Python
+__pycache__/
+*.pyc
+apps/etl/.env
+
+# Misc
+.DS_Store
+.env

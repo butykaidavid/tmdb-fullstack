@@ -1,0 +1,26 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "autocomplete": {
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "edge_ngram"
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "name": {
+        "type": "text",
+        "analyzer": "autocomplete"
+      },
+      "popularity": {
+        "type": "float"
+      }
+    }
+  }
+}
