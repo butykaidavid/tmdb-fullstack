@@ -1,1 +1,5 @@
-export default function LangHome(){ return null; }
+import { redirect } from 'next/navigation'
+
+export default function LangHome() {
+  redirect('/')
+}
