@@ -4,7 +4,7 @@ import Navigation from "@/components/Navigation";
 import { Search, Film, Users, Star, Calendar } from "lucide-react";
 import Image from "next/image";
 
-export default async function Page({ searchParams }: any){
+export default async function SearchPage({ searchParams }: any){
   const q = searchParams?.q || "";
   const data = q ? await api<any>(`/api/search?q=${encodeURIComponent(q)}`) : {movies:[], people:[]};
   
