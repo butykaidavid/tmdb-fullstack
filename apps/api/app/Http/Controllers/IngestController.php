@@ -17,7 +17,15 @@ class IngestController extends Controller
             foreach (($data['external_ids'] ?? []) as $e) ExternalId::updateOrCreate(['entity_type'=>'movie','entity_id'=>$m->id,'source'=>$e['source']], ['value'=>$e['value']]);
             foreach (($data['credits']['cast'] ?? []) as $c) MovieCredit::updateOrCreate(['movie_id'=>$m->id,'person_id'=>$c['person_id'],'credit_type'=>'cast','character'=>$c['character']??null], ['cast_order'=>$c['order']??null]);
             foreach (($data['credits']['crew'] ?? []) as $c) MovieCredit::updateOrCreate(['movie_id'=>$m->id,'person_id'=>$c['person_id'],'credit_type'=>'crew','job'=>$c['job']??null,'department'=>$c['department']??null], []);
-            foreach (($data['release_dates'] ?? []) as $rd) ReleaseDate::updateOrCreate(['movie_id'=>$m->id,'region'=>$rd['region'],'release_date'=>$rd['release_date']], ['certification'=>$rd.get('certification')??null,'type'=>$rd.get('type')??null]);
+            foreach (($data['release_dates'] ?? []) as $rd) {
+                ReleaseDate::updateOrCreate(
+                    ['movie_id' => $m->id, 'region' => $rd['region'], 'release_date' => $rd['release_date']],
+                    [
+                        'certification' => $rd['certification'] ?? null,
+                        'type' => $rd['type'] ?? null,
+                    ]
+                );
+            }
         });
         return response()->json(['status'=>'ok']);
     }
@@ -71,7 +79,13 @@ class IngestController extends Controller
     public function providers(Request $r){
         $d=$r->all();
         if (isset($d['provider'])) {
-            WatchProvider::updateOrCreate(['tmdb_id'=>$d['provider']['tmdb_id']], ['provider_name'=>$d['provider']['provider_name']??'', 'logo_path'=>$d['provider'].get('logo_path')??null]);
+            WatchProvider::updateOrCreate(
+                ['tmdb_id' => $d['provider']['tmdb_id']],
+                [
+                    'provider_name' => $d['provider']['provider_name'] ?? '',
+                    'logo_path' => $d['provider']['logo_path'] ?? null,
+                ]
+            );
         }
         foreach (($d['entity_providers'] ?? []) as $ep) {
             $wp = WatchProvider::firstOrCreate(['tmdb_id'=>$ep['provider_tmdb_id']], ['provider_name'=>'']);
