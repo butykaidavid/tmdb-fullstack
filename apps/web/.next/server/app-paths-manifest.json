@@ -1,0 +1,15 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/[lang]/movie/[id]/page": "app/[lang]/movie/[id]/page.js",
+  "/[lang]/page": "app/[lang]/page.js",
+  "/[lang]/person/[id]/page": "app/[lang]/person/[id]/page.js",
+  "/[lang]/search/page": "app/[lang]/search/page.js",
+  "/more/page": "app/more/page.js",
+  "/movies/page": "app/movies/page.js",
+  "/page": "app/page.js",
+  "/people/page": "app/people/page.js",
+  "/person/[id]/page": "app/person/[id]/page.js",
+  "/search/page": "app/search/page.js",
+  "/tv/page": "app/tv/page.js",
+  "/movie/[id]/page": "app/movie/[id]/page.js"
+}
