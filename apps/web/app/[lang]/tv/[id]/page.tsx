@@ -1,69 +1,73 @@
 import { api } from "@/lib/api";
 import Link from "next/link";
 
-export default async function Page({ params }: { params: { id: string, lang: string }}) {
-  const movie = await api<any>(`/api/movie/${params.id}`).catch(() => null);
+export default async function TVShowPage({ params }: { params: { id: string, lang: string }}) {
+  const show = await api<any>(`/api/tv/${params.id}`).catch(() => null);
   
-  if (!movie) {
+  if (!show) {
     return (
       <div className="container mx-auto px-4 py-20 text-center">
-        <h1 className="text-3xl font-bold text-gray-700 mb-4">Movie Not Found</h1>
-        <p className="text-gray-600 mb-6">The movie you're looking for doesn't exist or hasn't been loaded yet.</p>
-        <Link href={`/${params.lang}`} className="btn-primary">
-          Go Home
+        <h1 className="text-3xl font-bold text-gray-700 mb-4">TV Show Not Found</h1>
+        <p className="text-gray-600 mb-6">The TV show you're looking for doesn't exist or hasn't been loaded yet.</p>
+        <Link href={`/${params.lang}/tv`} className="btn-primary">
+          Browse TV Shows
         </Link>
       </div>
     );
   }
 
-  const year = movie.release_date ? new Date(movie.release_date).getFullYear() : '';
-  const rating = movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A';
-  const runtime = movie.runtime ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m` : '';
+  const year = show.first_air_date ? new Date(show.first_air_date).getFullYear() : '';
+  const rating = show.vote_average ? show.vote_average.toFixed(1) : 'N/A';
   
   return (
     <div>
       {/* Backdrop Hero Section */}
       <div className="relative">
-        {movie.backdrop_path ? (
+        {show.backdrop_path ? (
           <div className="relative h-[500px] overflow-hidden">
             <div 
               className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: `url(https://image.tmdb.org/t/p/original${movie.backdrop_path})` }}
+              style={{ backgroundImage: `url(https://image.tmdb.org/t/p/original${show.backdrop_path})` }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
             
             <div className="relative container mx-auto px-4 h-full flex items-end pb-12">
               <div className="flex gap-8 items-end">
-                {movie.poster_path && (
+                {show.poster_path && (
                   <img 
-                    src={`https://image.tmdb.org/t/p/w342${movie.poster_path}`}
-                    alt={movie.title}
+                    src={`https://image.tmdb.org/t/p/w342${show.poster_path}`}
+                    alt={show.name}
                     className="hidden md:block w-64 rounded-lg shadow-2xl"
                   />
                 )}
                 
                 <div className="text-white flex-1">
                   <h1 className="text-4xl md:text-5xl font-bold mb-3">
-                    {movie.title} {year && <span className="font-normal text-gray-300">({year})</span>}
+                    {show.name} {year && <span className="font-normal text-gray-300">({year})</span>}
                   </h1>
                   
                   <div className="flex flex-wrap items-center gap-4 mb-4 text-sm md:text-base">
-                    {movie.release_date && (
+                    {show.first_air_date && (
                       <span className="flex items-center gap-1">
-                        📅 {new Date(movie.release_date).toLocaleDateString()}
+                        📅 {new Date(show.first_air_date).toLocaleDateString()}
                       </span>
                     )}
-                    {runtime && <span>⏱️ {runtime}</span>}
-                    {movie.vote_average && (
+                    {show.number_of_seasons && (
+                      <span>📺 {show.number_of_seasons} Season{show.number_of_seasons !== 1 ? 's' : ''}</span>
+                    )}
+                    {show.number_of_episodes && (
+                      <span>🎬 {show.number_of_episodes} Episodes</span>
+                    )}
+                    {show.vote_average && (
                       <span className="flex items-center gap-1 bg-yellow-500 text-dark px-3 py-1 rounded-full font-semibold">
                         ⭐ {rating}
                       </span>
                     )}
                   </div>
                   
-                  {movie.genres && movie.genres.length > 0 && (
+                  {show.genres && show.genres.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {movie.genres.map((genre: any) => (
+                      {show.genres.map((genre: any) => (
                         <span key={genre.id} className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm">
                           {genre.name}
                         </span>
@@ -71,8 +75,8 @@ export default async function Page({ params }: { params: { id: string, lang: str
                     </div>
                   )}
                   
-                  {movie.tagline && (
-                    <p className="text-gray-300 italic text-lg mb-4">"{movie.tagline}"</p>
+                  {show.tagline && (
+                    <p className="text-gray-300 italic text-lg mb-4">"{show.tagline}"</p>
                   )}
                 </div>
               </div>
@@ -82,33 +86,33 @@ export default async function Page({ params }: { params: { id: string, lang: str
           <div className="gradient-bg text-white py-12">
             <div className="container mx-auto px-4">
               <h1 className="text-4xl font-bold mb-3">
-                {movie.title} {year && <span className="font-normal">({year})</span>}
+                {show.name} {year && <span className="font-normal">({year})</span>}
               </h1>
-              {movie.tagline && <p className="text-gray-300 italic text-lg">"{movie.tagline}"</p>}
+              {show.tagline && <p className="text-gray-300 italic text-lg">"{show.tagline}"</p>}
             </div>
           </div>
         )}
       </div>
 
-      {/* Content Sections */}
+      {/* Content */}
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
             {/* Overview */}
-            {movie.overview && (
+            {show.overview && (
               <section>
                 <h2 className="text-2xl font-bold mb-4">Overview</h2>
-                <p className="text-gray-700 leading-relaxed text-lg">{movie.overview}</p>
+                <p className="text-gray-700 leading-relaxed text-lg">{show.overview}</p>
               </section>
             )}
 
             {/* Cast */}
-            {movie.credits && movie.credits.cast && movie.credits.cast.length > 0 && (
+            {show.credits && show.credits.cast && show.credits.cast.length > 0 && (
               <section>
                 <h2 className="text-2xl font-bold mb-4">Top Cast</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {movie.credits.cast.slice(0, 6).map((person: any) => (
+                  {show.credits.cast.slice(0, 6).map((person: any) => (
                     <Link 
                       key={person.id} 
                       href={`/${params.lang}/person/${person.id}`}
@@ -139,19 +143,30 @@ export default async function Page({ params }: { params: { id: string, lang: str
               </section>
             )}
 
-            {/* Videos/Trailers */}
-            {movie.videos && movie.videos.results && movie.videos.results.length > 0 && (
+            {/* Seasons */}
+            {show.seasons && show.seasons.length > 0 && (
               <section>
-                <h2 className="text-2xl font-bold mb-4">Trailers & Videos</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {movie.videos.results.slice(0, 2).map((video: any) => (
-                    <div key={video.id} className="aspect-video">
-                      <iframe
-                        src={`https://www.youtube.com/embed/${video.key}`}
-                        title={video.name}
-                        className="w-full h-full rounded-lg shadow-md"
-                        allowFullScreen
-                      />
+                <h2 className="text-2xl font-bold mb-4">Seasons</h2>
+                <div className="space-y-4">
+                  {show.seasons.map((season: any) => (
+                    <div key={season.id} className="flex gap-4 bg-gray-50 rounded-lg p-4">
+                      {season.poster_path && (
+                        <img
+                          src={`https://image.tmdb.org/t/p/w154${season.poster_path}`}
+                          alt={season.name}
+                          className="w-24 rounded-lg"
+                        />
+                      )}
+                      <div className="flex-1">
+                        <h3 className="font-bold text-lg">{season.name}</h3>
+                        <p className="text-sm text-gray-600 mb-2">
+                          {season.air_date && `${new Date(season.air_date).getFullYear()} • `}
+                          {season.episode_count} Episodes
+                        </p>
+                        {season.overview && (
+                          <p className="text-sm text-gray-700 line-clamp-3">{season.overview}</p>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -161,50 +176,35 @@ export default async function Page({ params }: { params: { id: string, lang: str
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Facts */}
             <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="font-bold text-lg mb-4">Facts</h3>
+              <h3 className="font-bold text-lg mb-4">Info</h3>
               <div className="space-y-3 text-sm">
-                {movie.status && (
+                {show.status && (
                   <div>
                     <p className="font-semibold text-gray-700">Status</p>
-                    <p className="text-gray-600">{movie.status}</p>
+                    <p className="text-gray-600">{show.status}</p>
                   </div>
                 )}
-                {movie.original_language && (
+                {show.type && (
+                  <div>
+                    <p className="font-semibold text-gray-700">Type</p>
+                    <p className="text-gray-600">{show.type}</p>
+                  </div>
+                )}
+                {show.networks && show.networks.length > 0 && (
+                  <div>
+                    <p className="font-semibold text-gray-700">Network</p>
+                    <p className="text-gray-600">{show.networks[0].name}</p>
+                  </div>
+                )}
+                {show.original_language && (
                   <div>
                     <p className="font-semibold text-gray-700">Original Language</p>
-                    <p className="text-gray-600">{movie.original_language.toUpperCase()}</p>
-                  </div>
-                )}
-                {movie.budget && movie.budget > 0 && (
-                  <div>
-                    <p className="font-semibold text-gray-700">Budget</p>
-                    <p className="text-gray-600">${movie.budget.toLocaleString()}</p>
-                  </div>
-                )}
-                {movie.revenue && movie.revenue > 0 && (
-                  <div>
-                    <p className="font-semibold text-gray-700">Revenue</p>
-                    <p className="text-gray-600">${movie.revenue.toLocaleString()}</p>
+                    <p className="text-gray-600">{show.original_language.toUpperCase()}</p>
                   </div>
                 )}
               </div>
             </div>
-
-            {/* Keywords */}
-            {movie.keywords && movie.keywords.keywords && movie.keywords.keywords.length > 0 && (
-              <div className="bg-gray-50 rounded-lg p-6">
-                <h3 className="font-bold text-lg mb-4">Keywords</h3>
-                <div className="flex flex-wrap gap-2">
-                  {movie.keywords.keywords.slice(0, 10).map((keyword: any) => (
-                    <span key={keyword.id} className="bg-gray-200 px-3 py-1 rounded-full text-xs">
-                      {keyword.name}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
