@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { api } from "@/lib/api";
 
-export default async function Page({ searchParams }: any){
+export default async function Page({ params, searchParams }: { params: { lang: string }, searchParams: any }){
   const q = searchParams?.q || "";
+  const lang = params.lang;
   const data = q ? await api<any>(`/api/search?q=${encodeURIComponent(q)}`) : {movies:[], people:[]};
   return (
     <main className="mx-auto max-w-5xl p-6">
@@ -17,7 +18,7 @@ export default async function Page({ searchParams }: any){
               {data.movies.map((m: any) => (
                 <li key={m.id} className="flex gap-3 items-center">
                   {m.poster_path && <img src={`https://image.tmdb.org/t/p/w92${m.poster_path}`} alt="" className="rounded"/>}
-                  <Link href={`./movie/${m.id}`} className="hover:underline">{m.title}</Link>
+                  <Link href={`/${lang}/movie/${m.id}`} className="hover:underline">{m.title}</Link>
                 </li>
               ))}
             </ul>
@@ -28,7 +29,7 @@ export default async function Page({ searchParams }: any){
               {data.people.map((p: any) => (
                 <li key={p.id} className="flex gap-3 items-center">
                   {p.profile_path && <img src={`https://image.tmdb.org/t/p/w92${p.profile_path}`} alt="" className="rounded"/>}
-                  <Link href={`./person/${p.id}`} className="hover:underline">{p.name}</Link>
+                  <Link href={`/${lang}/person/${p.id}`} className="hover:underline">{p.name}</Link>
                 </li>
               ))}
             </ul>

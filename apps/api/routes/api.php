@@ -3,9 +3,14 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\IngestController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\HealthController;
+use App\Http\Controllers\MovieController;
+use App\Http\Controllers\PersonController;
 
 Route::get('/health', HealthController::class);
 Route::get('/search', [SearchController::class,'__invoke']);
+
+Route::get('/movie/{id}', [MovieController::class, 'show']);
+Route::get('/person/{id}', [PersonController::class, 'show']);
 
 Route::post('/ingest/movie', [IngestController::class,'movie']);
 Route::post('/ingest/person', [IngestController::class,'person']);
