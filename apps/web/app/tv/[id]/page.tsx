@@ -1,26 +1,26 @@
 import { api } from "@/lib/api";
 import Navigation from "@/components/Navigation";
-import { Star, Calendar, Clock, Users, Play, Plus, Share2 } from "lucide-react";
+import { Star, Calendar, Clock, Users, Play, Plus, Share2, Tv } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-export default async function Page({ params }: { params: { id: string, lang: string }}) {
-  const movie = await api<any>(`/api/movie/${params.id}`);
-  const credits = await api<any>(`/api/movie/${params.id}/credits`);
-  const similar = await api<any>(`/api/movie/${params.id}/similar`);
+export default async function TvShowPage({ params }: { params: { id: string }}) {
+  const show = await api<any>(`/api/tv/${params.id}`);
+  const credits = await api<any>(`/api/tv/${params.id}/credits`);
+  const similar = await api<any>(`/api/tv/${params.id}/similar`);
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
 
   const formatRuntime = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(amount);
   };
 
   return (
@@ -29,11 +29,11 @@ export default async function Page({ params }: { params: { id: string, lang: str
       
       {/* Hero Section */}
       <div className="relative h-[70vh] overflow-hidden">
-        {movie.backdrop_path && (
+        {show.backdrop_path && (
           <div 
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{
-              backgroundImage: `url(https://image.tmdb.org/t/p/original${movie.backdrop_path})`
+              backgroundImage: `url(https://image.tmdb.org/t/p/original${show.backdrop_path})`
             }}
           />
         )}
@@ -45,11 +45,11 @@ export default async function Page({ params }: { params: { id: string, lang: str
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
               {/* Poster */}
               <div className="lg:col-span-1">
-                {movie.poster_path && (
+                {show.poster_path && (
                   <div className="relative aspect-[2/3] max-w-sm mx-auto lg:mx-0">
                     <Image
-                      src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                      alt={movie.title}
+                      src={`https://image.tmdb.org/t/p/w500${show.poster_path}`}
+                      alt={show.name}
                       fill
                       className="rounded-lg shadow-2xl object-cover"
                     />
@@ -57,15 +57,15 @@ export default async function Page({ params }: { params: { id: string, lang: str
                 )}
               </div>
               
-              {/* Movie Info */}
+              {/* Show Info */}
               <div className="lg:col-span-2 text-center lg:text-left">
                 <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 text-shadow">
-                  {movie.title}
+                  {show.name}
                 </h1>
                 
-                {movie.tagline && (
+                {show.tagline && (
                   <p className="text-xl text-tmdb-textSecondary mb-6 italic">
-                    "{movie.tagline}"
+                    "{show.tagline}"
                   </p>
                 )}
                 
@@ -73,34 +73,46 @@ export default async function Page({ params }: { params: { id: string, lang: str
                   <div className="flex items-center space-x-1">
                     <Star className="w-5 h-5 text-yellow-400 fill-current" />
                     <span className="text-white font-semibold">
-                      {movie.vote_average?.toFixed(1) || 'N/A'}
+                      {show.vote_average?.toFixed(1) || 'N/A'}
                     </span>
                     <span className="text-tmdb-textSecondary">
-                      ({movie.vote_count?.toLocaleString()} votes)
+                      ({show.vote_count?.toLocaleString()} votes)
                     </span>
                   </div>
                   
-                  {movie.release_date && (
+                  {show.first_air_date && (
                     <div className="flex items-center space-x-1">
                       <Calendar className="w-5 h-5 text-tmdb-textSecondary" />
                       <span className="text-tmdb-textSecondary">
-                        {new Date(movie.release_date).getFullYear()}
+                        {new Date(show.first_air_date).getFullYear()}
+                        {show.last_air_date && show.first_air_date !== show.last_air_date && 
+                          ` - ${new Date(show.last_air_date).getFullYear()}`
+                        }
                       </span>
                     </div>
                   )}
                   
-                  {movie.runtime && (
+                  {show.episode_run_time && show.episode_run_time.length > 0 && (
                     <div className="flex items-center space-x-1">
                       <Clock className="w-5 h-5 text-tmdb-textSecondary" />
                       <span className="text-tmdb-textSecondary">
-                        {formatRuntime(movie.runtime)}
+                        {formatRuntime(show.episode_run_time[0])} per episode
+                      </span>
+                    </div>
+                  )}
+                  
+                  {show.number_of_seasons && (
+                    <div className="flex items-center space-x-1">
+                      <Tv className="w-5 h-5 text-tmdb-textSecondary" />
+                      <span className="text-tmdb-textSecondary">
+                        {show.number_of_seasons} season{show.number_of_seasons !== 1 ? 's' : ''}
                       </span>
                     </div>
                   )}
                 </div>
                 
                 <p className="text-lg text-tmdb-textSecondary mb-8 leading-relaxed max-w-3xl">
-                  {movie.overview}
+                  {show.overview}
                 </p>
                 
                 <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
@@ -125,7 +137,7 @@ export default async function Page({ params }: { params: { id: string, lang: str
         </div>
       </div>
 
-      {/* Movie Details */}
+      {/* Show Details */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
@@ -165,19 +177,19 @@ export default async function Page({ params }: { params: { id: string, lang: str
               </section>
             )}
 
-            {/* Similar Movies */}
+            {/* Similar Shows */}
             {similar && similar.length > 0 && (
               <section>
-                <h2 className="text-2xl font-bold text-tmdb-text mb-6">Similar Movies</h2>
+                <h2 className="text-2xl font-bold text-tmdb-text mb-6">Similar TV Shows</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {similar.slice(0, 12).map((movie: any) => (
-                    <Link key={movie.id} href={`/movie/${movie.tmdb_id}`}>
+                  {similar.slice(0, 12).map((show: any) => (
+                    <Link key={show.id} href={`/tv/${show.tmdb_id}`}>
                       <div className="group">
                         <div className="relative aspect-[2/3] mb-3">
-                          {movie.poster_path ? (
+                          {show.poster_path ? (
                             <Image
-                              src={`https://image.tmdb.org/t/p/w300${movie.poster_path}`}
-                              alt={movie.title}
+                              src={`https://image.tmdb.org/t/p/w300${show.poster_path}`}
+                              alt={show.name}
                               fill
                               className="rounded-lg object-cover group-hover:scale-105 transition-transform duration-200"
                             />
@@ -188,12 +200,12 @@ export default async function Page({ params }: { params: { id: string, lang: str
                           )}
                         </div>
                         <h3 className="font-semibold text-tmdb-text text-sm line-clamp-2 group-hover:text-white transition-colors duration-200">
-                          {movie.title}
+                          {show.name}
                         </h3>
                         <div className="flex items-center space-x-1 mt-1">
                           <Star className="w-3 h-3 text-yellow-400 fill-current" />
                           <span className="text-xs text-tmdb-textSecondary">
-                            {movie.vote_average?.toFixed(1) || 'N/A'}
+                            {show.vote_average?.toFixed(1) || 'N/A'}
                           </span>
                         </div>
                       </div>
@@ -206,39 +218,39 @@ export default async function Page({ params }: { params: { id: string, lang: str
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Movie Facts */}
+            {/* Show Facts */}
             <div className="bg-tmdb-light/30 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-tmdb-text mb-4">Movie Facts</h3>
+              <h3 className="text-lg font-semibold text-tmdb-text mb-4">Show Facts</h3>
               <div className="space-y-3 text-sm">
-                {movie.status && (
+                {show.status && (
                   <div>
                     <span className="text-tmdb-textSecondary">Status:</span>
-                    <span className="ml-2 text-tmdb-text">{movie.status}</span>
+                    <span className="ml-2 text-tmdb-text">{show.status}</span>
                   </div>
                 )}
-                {movie.original_language && (
+                {show.original_language && (
                   <div>
                     <span className="text-tmdb-textSecondary">Original Language:</span>
-                    <span className="ml-2 text-tmdb-text">{movie.original_language.toUpperCase()}</span>
+                    <span className="ml-2 text-tmdb-text">{show.original_language.toUpperCase()}</span>
                   </div>
                 )}
-                {movie.budget && movie.budget > 0 && (
+                {show.number_of_seasons && (
                   <div>
-                    <span className="text-tmdb-textSecondary">Budget:</span>
-                    <span className="ml-2 text-tmdb-text">{formatCurrency(movie.budget)}</span>
+                    <span className="text-tmdb-textSecondary">Seasons:</span>
+                    <span className="ml-2 text-tmdb-text">{show.number_of_seasons}</span>
                   </div>
                 )}
-                {movie.revenue && movie.revenue > 0 && (
+                {show.number_of_episodes && (
                   <div>
-                    <span className="text-tmdb-textSecondary">Revenue:</span>
-                    <span className="ml-2 text-tmdb-text">{formatCurrency(movie.revenue)}</span>
+                    <span className="text-tmdb-textSecondary">Episodes:</span>
+                    <span className="ml-2 text-tmdb-text">{show.number_of_episodes}</span>
                   </div>
                 )}
-                {movie.genres && movie.genres.length > 0 && (
+                {show.genres && show.genres.length > 0 && (
                   <div>
                     <span className="text-tmdb-textSecondary">Genres:</span>
                     <div className="mt-1">
-                      {movie.genres.map((genre: any, index: number) => (
+                      {show.genres.map((genre: any, index: number) => (
                         <span key={genre.id} className="inline-block bg-tmdb-accent/20 text-tmdb-accent px-2 py-1 rounded text-xs mr-2 mb-1">
                           {genre.name}
                         </span>
@@ -249,14 +261,28 @@ export default async function Page({ params }: { params: { id: string, lang: str
               </div>
             </div>
 
-            {/* Production Companies */}
-            {movie.production_companies && movie.production_companies.length > 0 && (
+            {/* Networks */}
+            {show.networks && show.networks.length > 0 && (
               <div className="bg-tmdb-light/30 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-tmdb-text mb-4">Production Companies</h3>
+                <h3 className="text-lg font-semibold text-tmdb-text mb-4">Networks</h3>
                 <div className="space-y-2">
-                  {movie.production_companies.map((company: any) => (
-                    <div key={company.id} className="text-sm">
-                      <span className="text-tmdb-text">{company.name}</span>
+                  {show.networks.map((network: any) => (
+                    <div key={network.id} className="text-sm">
+                      <span className="text-tmdb-text">{network.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Created By */}
+            {show.created_by && show.created_by.length > 0 && (
+              <div className="bg-tmdb-light/30 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-tmdb-text mb-4">Created By</h3>
+                <div className="space-y-2">
+                  {show.created_by.map((creator: any) => (
+                    <div key={creator.id} className="text-sm">
+                      <span className="text-tmdb-text">{creator.name}</span>
                     </div>
                   ))}
                 </div>

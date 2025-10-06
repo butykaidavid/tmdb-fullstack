@@ -1,140 +1,248 @@
----
+# MovieDB - A Modern Movie Database Website
 
-# TMDB Full Scraper – Teljes Telepítési és Indítási Útmutató
+A full-featured movie database website inspired by themoviedb.org, built with modern web technologies and featuring a beautiful, responsive design.
 
-Ez a projekt egy **TMDB** adatletöltő és megjelenítő rendszer.
-Olyan, mint egy saját mini **TMDB / IMDB / Mafab.hu**, ami a TMDB API-ból lekéri az összes adatot (filmek, sorozatok, személyek, cégek stb.), elmenti a saját adatbázisodba, és egy weboldalon meg is jeleníti.
+## 🎬 Features
 
-A rendszer 3 fő részből áll:
+### 🏠 Homepage
+- **Hero Section**: Featured movie with backdrop image and key information
+- **Trending Movies**: Real-time trending movie carousel
+- **Popular Movies**: Most popular films based on user ratings
+- **Top Rated Movies**: Highest-rated movies of all time
+- **Now Playing**: Currently playing in theaters
+- **Upcoming Movies**: Soon-to-be-released films
 
-1. **API** – Laravel 11 (kezeli az adatbázist)
-2. **ETL** – Python 3.11 (letölti és feldolgozza a TMDB adatait)
-3. **Web** – Next.js 14 (felhasználói felület több nyelven: HU/EN/DE)
+### 🎭 Movie Details
+- **Comprehensive Information**: Plot, cast, crew, ratings, release date, runtime
+- **Cast & Crew**: Detailed cast information with character names
+- **Similar Movies**: Recommendations based on genre and ratings
+- **Movie Facts**: Budget, revenue, production companies, genres
+- **High-Quality Images**: Posters and backdrop images from TMDB
 
----
+### 👥 People Pages
+- **Actor Profiles**: Detailed actor/actress information
+- **Filmography**: Complete list of movies and TV shows
+- **Personal Information**: Birth date, place of birth, biography
+- **High-Quality Photos**: Profile images and gallery
 
-## 1. Szükséges előfeltételek
+### 📺 TV Shows
+- **TV Show Listings**: Trending, popular, and top-rated shows
+- **Show Details**: Episodes, seasons, cast, and crew
+- **Similar Shows**: Recommendations based on genre
+- **Network Information**: Broadcasting networks and creators
 
-* **TMDB API kulcs** (v4 token) → [igénylés itt](https://www.themoviedb.org/settings/api)
-* **Docker Desktop** → [letöltés](https://www.docker.com/products/docker-desktop)
+### 🔍 Search Functionality
+- **Universal Search**: Search across movies, TV shows, and people
+- **Real-time Results**: Instant search results as you type
+- **Filtered Results**: Separate sections for movies and people
+- **No Results Handling**: User-friendly empty state
 
----
+### 📱 Responsive Design
+- **Mobile-First**: Optimized for all screen sizes
+- **Touch-Friendly**: Easy navigation on mobile devices
+- **Fast Loading**: Optimized images and lazy loading
+- **Modern UI**: Clean, intuitive interface
 
-## 2. Projekt letöltése
+## 🛠️ Technology Stack
 
-```bash
-git clone https://github.com/butykaidavid/tmdb-fullstack.git
-cd tmdb-fullstack
+### Frontend
+- **Next.js 14**: React framework with App Router
+- **TypeScript**: Type-safe development
+- **Tailwind CSS**: Utility-first CSS framework
+- **Lucide React**: Beautiful icon library
+- **Next/Image**: Optimized image loading
+
+### Backend
+- **Laravel 11**: PHP framework for API
+- **PostgreSQL**: Primary database
+- **Redis**: Caching and session storage
+- **OpenSearch**: Full-text search engine
+
+### Infrastructure
+- **Docker**: Containerized deployment
+- **Docker Compose**: Multi-service orchestration
+- **Nginx**: Web server and reverse proxy
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Docker Desktop
+- TMDB API Key (v4 token)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd movie-database
+   ```
+
+2. **Set up environment variables**
+   ```bash
+   # Copy environment files
+   cp apps/api/.env.example apps/api/.env
+   cp apps/etl/.env.example apps/etl/.env
+   cp apps/web/.env.example apps/web/.env
+   ```
+
+3. **Configure TMDB API Key**
+   Edit `apps/etl/.env` and add your TMDB API key:
+   ```env
+   TMDB_BEARER=your_tmdb_api_key_here
+   ```
+
+4. **Start the application**
+   ```bash
+   docker-compose up -d
+   ```
+
+5. **Run database migrations**
+   ```bash
+   docker-compose exec api php artisan migrate
+   ```
+
+6. **Ingest initial data** (optional)
+   ```bash
+   docker-compose exec etl python -m etl.cli ingest --movies --people --tv
+   ```
+
+### Access the Application
+
+- **Web Application**: http://localhost:3000
+- **API**: http://localhost:8080
+- **Database**: localhost:5432
+- **OpenSearch**: http://localhost:9200
+
+## 📁 Project Structure
+
+```
+movie-database/
+├── apps/
+│   ├── api/                 # Laravel API backend
+│   │   ├── app/
+│   │   │   ├── Http/Controllers/
+│   │   │   └── Models/
+│   │   ├── database/migrations/
+│   │   └── routes/
+│   ├── etl/                 # Python ETL pipeline
+│   │   └── src/etl/
+│   └── web/                 # Next.js frontend
+│       ├── app/
+│       ├── components/
+│       └── lib/
+├── opensearch/              # Search index configurations
+└── docker-compose.yml
 ```
 
+## 🎨 Design Features
+
+### Color Scheme
+- **Primary**: TMDB-inspired dark theme
+- **Accent**: Red (#e50914) for highlights
+- **Background**: Dark blue (#0f0f23)
+- **Text**: White and light gray for readability
+
+### Typography
+- **Font**: Inter (Google Fonts)
+- **Hierarchy**: Clear heading and body text sizes
+- **Readability**: Optimized line heights and spacing
+
+### Components
+- **Navigation**: Sticky header with mobile menu
+- **Cards**: Hover effects and smooth transitions
+- **Buttons**: Consistent styling with hover states
+- **Forms**: Accessible input fields with focus states
+
+## 🔧 API Endpoints
+
+### Movies
+- `GET /api/movies/trending` - Trending movies
+- `GET /api/movies/popular` - Popular movies
+- `GET /api/movies/top-rated` - Top rated movies
+- `GET /api/movies/now-playing` - Now playing movies
+- `GET /api/movies/upcoming` - Upcoming movies
+- `GET /api/movie/{id}` - Movie details
+- `GET /api/movie/{id}/credits` - Movie cast and crew
+- `GET /api/movie/{id}/similar` - Similar movies
+
+### People
+- `GET /api/people/popular` - Popular people
+- `GET /api/person/{id}` - Person details
+- `GET /api/person/{id}/movie_credits` - Person's movie credits
+- `GET /api/person/{id}/tv_credits` - Person's TV credits
+
+### TV Shows
+- `GET /api/tv/trending` - Trending TV shows
+- `GET /api/tv/popular` - Popular TV shows
+- `GET /api/tv/top-rated` - Top rated TV shows
+- `GET /api/tv/{id}` - TV show details
+- `GET /api/tv/{id}/credits` - TV show cast and crew
+- `GET /api/tv/{id}/similar` - Similar TV shows
+
+### Search
+- `GET /api/search?q={query}` - Universal search
+
+## 🚀 Deployment
+
+### Production Deployment
+
+1. **Set up production environment variables**
+2. **Configure domain and SSL certificates**
+3. **Set up database backups**
+4. **Configure monitoring and logging**
+5. **Deploy using Docker Swarm or Kubernetes**
+
+### Environment Variables
+
+#### API (.env)
+```env
+APP_NAME=MovieDB
+APP_ENV=production
+APP_DEBUG=false
+DB_CONNECTION=pgsql
+DB_HOST=postgres
+DB_PORT=5432
+DB_DATABASE=tmdb
+DB_USERNAME=app
+DB_PASSWORD=your_secure_password
+```
+
+#### ETL (.env)
+```env
+TMDB_BEARER=your_tmdb_api_key
+DATABASE_URL=postgresql://app:password@postgres:5432/tmdb
+REDIS_URL=redis://redis:6379
+```
+
+#### Web (.env)
+```env
+NEXT_PUBLIC_API_BASE=http://localhost:8080
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- **The Movie Database (TMDB)** for providing the API and data
+- **Laravel** for the robust PHP framework
+- **Next.js** for the excellent React framework
+- **Tailwind CSS** for the utility-first CSS framework
+- **Lucide** for the beautiful icon set
+
+## 📞 Support
+
+For support, email support@moviedb.com or create an issue in the repository.
+
 ---
 
-## 3. Indítás egyszerűen – script segítségével
-
-### Linux / Mac (Bash)
-
-1. Másold be a repó gyökerébe az alábbi fájlt **`start.sh`** néven:
-
-   * [start.sh tartalom](#linux-mac-indító-script)
-2. Engedélyezd a futtatást:
-
-```bash
-chmod +x start.sh
-```
-
-3. Futtasd:
-
-```bash
-./start.sh
-```
-
----
-
-### Windows (PowerShell)
-
-1. Másold be a repó gyökerébe az alábbi fájlt **`start.ps1`** néven:
-
-   * [start.ps1 tartalom](#windows-indító-script)
-2. Nyisd meg a PowerShell-t a mappában és engedélyezd a futtatást:
-
-```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-```
-
-3. Futtasd:
-
-```powershell
-.\start.ps1
-```
-
----
-
-## 4. Mi történik a script futtatásakor?
-
-* Ellenőrzi és létrehozza a szükséges `.env` fájlokat
-* Bekéri a TMDB API kulcsodat és beírja a helyére
-* Elindítja a Docker konténereket
-* Lefuttatja az adatbázis migrációkat
-* Letölti az alapadatokat (pl. műfajok, nyelvek)
-* Opcionálisan letölti a filmeket, személyeket, sorozatokat
-* Opcionálisan elindítja a folyamatos frissítést (watcher)
-
----
-
-## 5. Weboldal megnyitása
-
-Ha a script lefutott és a konténerek futnak, nyisd meg a böngészőben:
-
-```
-http://localhost:3000/hu
-```
-
----
-
-## 6. Hibakezelés
-
-* **401/403 hiba:** Ellenőrizd, hogy a `apps/etl/.env` fájlban helyes-e a TMDB\_BEARER kulcs.
-* **Konténer nem indul:**
-
-```bash
-docker compose logs
-```
-
-* **Újrakezdés:**
-
-```bash
-docker compose down -v
-./start.sh    # vagy Windows-on .\start.ps1
-```
-
----
-
-## Linux / Mac indító script
-
-<details>
-<summary>Kattints ide a start.sh tartalomért</summary>
-
-```bash
-[ide jön az előbb elkészített teljes start.sh tartalom]
-```
-
-</details>
-
----
-
-## Windows indító script
-
-<details>
-<summary>Kattints ide a start.ps1 tartalomért</summary>
-
-```powershell
-[ide jön az előbb elkészített teljes start.ps1 tartalom]
-```
-
-</details>
-
----
-
-A fenti megoldással egy kezdő is el tudja indítani a rendszert **pár kattintással**, és nem kell kézzel gépelni a parancsokat.
-
----
+**MovieDB** - Discover, explore, and enjoy movies and TV shows like never before! 🎬✨
